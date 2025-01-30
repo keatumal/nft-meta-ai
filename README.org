@@ -34,7 +34,7 @@ Due to the peculiarities of contract operation, an NFT mint under the same ID ca
 1. Clone the repository:
 
    #+begin_src bash
-     git clone
+     git clone https://github.com/keatumal/nft-meta-ai.git
      cd nft-meta-ai
    #+end_src
 

@@ -34,7 +34,7 @@
 1. Клонируйте репозиторий:
 
    #+begin_src bash
-     git clone 
+     git clone https://github.com/keatumal/nft-meta-ai.git
      cd nft-meta-ai
    #+end_src
 
