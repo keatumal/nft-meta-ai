@@ -1,0 +1,38 @@
+general:
+  use_proxy: yes
+  download_image_timeout: 5
+  fetch_metadata_timeout: 60
+
+blockchains:
+  ethereum:
+    contracts:
+      - address: "0x5908Eb01497b5d8E53c339Ea0186050d487c8d0c"
+        from_block: 16892305
+        first_id: 1
+  zora:
+    contracts:
+      - address: "0x5aBF0c04aB7196E2bDd19313B479baebd9F7791b"
+        from_block: 11403297
+        first_id: 1
+
+openai:
+  model: "gpt-4o-mini"
+  error_timeout: 10
+
+  description_min_len: 100
+  max_attempts: 5
+
+  image_resolution: [512, 512]
+
+  prompt: |
+    You are a UX expert analyzing a design concept image from a web3/crypto project. 
+    Focus on identifying:
+    1. The core UX problem being solved
+    2. The proposed solution's key features
+    3. UI elements highlighted
+    Keep your response to one sentence and be concise.
+
+paths:
+  cache:
+    event_logs: "./cache/events"
+  nft_images_dir: "./nft_images"

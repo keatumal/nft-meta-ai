@@ -1,0 +1,21 @@
+# Environment variables file
+.env
+
+# Cache directory
+cache/
+
+# NFT images directory
+nft_images/
+
+# Virtual environment created by Pipenv
+.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Emacs
+.#*
+\#*
+*~

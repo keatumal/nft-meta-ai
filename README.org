@@ -1,0 +1,197 @@
+#+title: Retrieving Metadata and Describing Images via AI for ZORA-1155 NFT Standard
+#+author: anakvad.base.eth
+#+date: 2025-01-30
+
+* Project Description
+
+This project was created as part of [[https://www.bountycaster.xyz/bounty/0x2ce371c71f9f33796b33034212aea5df9ca05da4][this bounty]]. Therefore, it is generally an ad-hoc solution but will work for any contract on Ethereum and Zora networks with the limitations discussed below.
+
+The main goal is to retrieve the following information about an NFT: collection name, token ID, token name, token description, image URL, and mint date. Then, using GPT, extract text from the image and store all this information in a database.
+
+This software uses RPC nodes to obtain token information. Initially, I tried using the Moralis API but received incomplete data. To ensure greater reliability and independence from service providers, I decided to query the blockchain directly.
+
+My approach is quite narrow and specific, and here’s why:
+
+- The contract must have the functions =name=, =uri=, and =nextTokenId=
+- To obtain the token ID, I start with a fixed number (default is 1), and each subsequent ID is obtained by incrementing by one until it reaches the number returned by =nextTokenId= minus one.
+
+For database interaction, [[https://www.sqlalchemy.org/][SQLAlchemy]] is used, meaning various databases are supported and can be switched with a single line in the ~.env~ file.
+
+Downloading images from IPFS is supported. Before sending them to GPT, images are compressed to 512x512 resolution (configurable). This resolution was chosen as a compromise between quality and API cost.
+
+Infura and dRPC are used as node providers. Event logs are cached and loaded as needed.
+
+Due to the peculiarities of contract operation, an NFT mint under the same ID can be several times. Therefore, the date and time of the very first mint is recorded in the database.
+
+* Example of Program Execution
+
+#+caption: [[file:images/work-example-1.png][Example of Program Execution]]
+#+name: fig:work-example-1
+[[file:images/work-example-1.png]]
+
+* Installation
+
+1. Clone the repository:
+
+   #+begin_src bash
+     git clone
+     cd nft-meta-ai
+   #+end_src
+
+2. Install dependencies using Pipenv:
+   #+begin_src
+     pipenv install
+   #+end_src
+
+3. (Optional) If you prefer to use ~requirements.txt~, run:
+#+begin_src
+  pip install -r requirements.txt
+#+end_src
+
+* Usage
+
+1. Edit ~config.yaml~ (description below)
+2. Create ~.env~ (description below, example in ~.env.example~)
+3. Run the script ~main.py~
+   1. Using Pipenv
+      #+begin_src
+        pipenv shell
+        python main.py
+      #+end_src
+
+      Or
+
+      #+begin_src
+        pipenv run python main.py
+      #+end_src
+
+   2. If installed via ~requirements.txt~:
+      #+begin_src
+        python3 main.py
+      #+end_src
+
+* Configuration
+
+** =config.yaml=
+
+*** =general=
+
+General settings.
+
+**** =use_proxy= (optional, default: =yes=)
+
+Whether to use a SOCKS proxy for all connections.
+
+**** =download_image_timeout= (optional, default: =5=)
+
+If an image download fails, retry after this number of seconds. Retries are infinite.
+
+**** =fetch_metadata_timeout= (optional, default: =60=)
+
+If fetching token data from a node fails, retry after this number of seconds. Retries are infinite.
+
+*** =blockchains=
+
+A dictionary of blockchain settings, where keys are network names. Only two are supported: =ethereum= and =zora=.
+
+**** =<blockchain-name>=
+
+***** =contracts=
+
+A list of contract settings as dictionaries.
+
+****** =address=
+
+The contract *checksum address*.
+
+****** =from_block= (optional)
+
+The block number from which to start searching for mint events. Recommended for reducing node resource consumption. Defaults to zero.
+
+****** =first_id= (optional)
+
+The token ID to consider as the first. Defaults to one.
+
+*** =openai=
+
+Settings for generating text from images.
+
+**** =model=
+
+Model name. The current list is here: https://platform.openai.com/docs/models
+
+**** =error_timeout= (optional, default: 10)
+
+When an error occurs from the OpenAI API, wait this number of seconds before retrying. Retries are infinite.
+
+**** =description_min_len= (optional, default: =100=)
+
+The minimum allowable length of the model's response.
+
+**** =max_attempts= (optional, default: =5=)
+
+If the generated text is shorter than the allowed length, retry up to this number of times.
+
+**** =image_resolution= (optional, default: =[512, 512]=)
+
+Maximum allowed image dimensions: [width, height]. Each retrieved image is resized to these dimensions.
+
+**** =prompt=
+
+The prompt for obtaining an image-based response.
+
+*** =paths=
+
+Settings for various file paths.
+
+**** =cache=
+
+***** =event_logs=
+
+Path to the directory where blockchain event logs are cached.
+
+**** =nft_images_dir=
+
+Path to the directory for storing NFT images.
+
+** =.env=
+
+*** =INFURA_API_KEY=
+
+API key for Infura. Obtain it here: https://developer.metamask.io/
+
+*** =DRPC_API_KEY=
+
+API key for dRPC. Obtain it here: https://drpc.org
+
+*** =OPENAI_API_KEY=
+
+API key for OpenAI. Obtain it here: https://platform.openai.com/api-keys
+
+*** =DB_URI=
+
+Database URI for SQLAlchemy. Documentation: https://docs.sqlalchemy.org/en/20/core/engines.html#database-urls
+
+*** =PROXY_HOST=, =PROXY_PORT=, =PROXY_USER=, =PROXY_PASSWORD= (optional)
+
+IP or domain, port, username, and password for the SOCKS proxy. Username and password may be omitted.
+
+* Database Model
+
+- =network_name= (string): blockchain name
+- =contract_address= (string): contract address
+- =collection_name= (string): collection name
+- =token_id= (integer): NFT token ID
+- =token_name= (string): NFT name
+- =description= (text): NFT description
+- =image_url= (string): NFT image URL
+- =mint_date= (datetime): mint date and time in UTC.
+- =ai_image_description= (text): AI-generated image description
+
+* License
+
+This project is distributed under the MIT license. See the LICENSE file for details.
+
+* Contact
+
+If you have any questions or suggestions, contact me via Telegram: https://t.me/anakvad
